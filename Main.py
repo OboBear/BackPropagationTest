@@ -3,29 +3,31 @@ import numpy as np
 import math
 import random
 
+# 学习率
+LEARNING_RATE = 0.5
 
 
 def logistic(x):
 	return 1.0/(1+np.exp(-x))
 
+# 神经网络
 class NeuronNetwork(object):
-	def __init__(self, inputSize, hideSize, outputSize):
+	def __init__(self, inputSize, net1Size, net2Size):
 		print("\n=============================")
 		print("Init")
 		print("=============================")
 
-		print("NeuronNetwork inputSize = %d hideSize = %d outputSize = %d" %(inputSize, hideSize, outputSize))
+		print("NeuronNetwork inputSize = %d net1Size = %d net2Size = %d" %(inputSize, net1Size, net2Size))
 		self.inputSize = inputSize
-		self.hideSize = hideSize
-		self.outputSize = outputSize
-		self.hideLayer = NeuronLayer(hideSize, inputSize)
-		self.outputLayer = NeuronLayer(outputSize, hideSize)
+		self.net1Size = net1Size
+		self.net2Size = net2Size
+		self.net1Layer = NeuronLayer(net1Size, inputSize)
+		self.net2Layer = NeuronLayer(net2Size, net1Size)
 
 	def appendOne(self, npArray):
 		array = list(npArray)
 		array.append(1)
 		return np.array(array)
-
 
 	def train(self, input, targetOutput):
 		print("\n=============================")
@@ -33,7 +35,7 @@ class NeuronNetwork(object):
 		print("=============================")
 		# 添加偏置 1
 		input = self.appendOne(input)
-		hideOutput = self.hideLayer.calculate(input);
+		hideOutput = self.net1Layer.calculate(input);
 		hideOutput = np.array(hideOutput)
 
 		# 添加偏置 1
@@ -41,10 +43,10 @@ class NeuronNetwork(object):
 		print("=============================")
 		print("Calculate HideOutput")
 		print(hideOutput)
-		output = self.outputLayer.calculate(hideOutput);
+		output = self.net2Layer.calculate(hideOutput);
 		output = np.array(output)
 		print("=============================")
-		print("Calculate TotalOutput:")
+		print("Calculate TotalOutput")
 		print(output)
 		print("=============================")
 		print("Calculate distance")
@@ -61,9 +63,8 @@ class NeuronNetwork(object):
 		print(thetaOutput)
 
 		# temp1
-		weight = self.outputLayer.getWeight()
+		weight = self.net2Layer.getWeight()
 		# print("weight")
-		# print(weight)
 
 
 		temp1.shape = (1, len(temp1))
@@ -71,7 +72,7 @@ class NeuronNetwork(object):
 		# print(temp1)
 		# print(np.dot(temp1,weight))
 		thetaHideStep1 = np.dot(temp1,weight)[0] * input
-		thetaHideStep1 = np.split(thetaHideStep1,[self.hideSize])[0]
+		thetaHideStep1 = np.split(thetaHideStep1,[self.net1Size])[0]
 		print(thetaHideStep1)
 		thetaHideStep1.shape = [len(thetaHideStep1), 1]
 		thetaHideStep1 = np.array(thetaHideStep1)
@@ -84,16 +85,23 @@ class NeuronNetwork(object):
 		thetaHide = np.dot(thetaHideStep1, newInput)
 		print(thetaHide)
 
-		self.outputLayer.updateWeight(thetaOutput)
-		self.hideLayer.updateWeight(thetaHide)
+		self.net2Layer.updateWeight(thetaOutput)
+		self.net1Layer.updateWeight(thetaHide)
 
+	def calculate(self, input):
+		net1Input = self.appendOne(input)
+		net1Output = self.net1Layer.calculate(net1Input);
+		net2Input = self.appendOne(net1Output)
+		net2Output = self.net2Layer.calculate(net2Input)
+		return net2Output
 
+# 单层网络
 class NeuronLayer(object):
 	def __init__(self, layerSize, inputSize):
 		self.bies = 1
 		self.neuronLayer = []
 		for x in range(0,layerSize):
-			self.neuronLayer.append(Neuron(inputSize + 1))
+			self.neuronLayer.append(Neuron(inputSize = inputSize + 1))
 		print("NeuronLayer inputSize = %d bias = %d" %(inputSize, 1))
 
 	def calculate(self, input):
@@ -115,13 +123,16 @@ class NeuronLayer(object):
 			weight.append(self.neuronLayer[x].getWeight())
 		return np.array(weight)
 
-
+# 神经节点
 class Neuron(object):
-	def __init__(self, inputSize):
+	def __init__(self, inputSize, weight = None):
 		print("int Neuron")
 		self.inputSize = inputSize
-		self.inputWight = np.ones(inputSize)
-
+		if weight is not None:
+			self.inputWight = weight
+		else:
+			self.inputWight = np.ones(inputSize)
+	
 	def calculate(self, inputData):
 		print("inputData")
 		print(inputData)
@@ -131,23 +142,32 @@ class Neuron(object):
 		return self.netOut
 
 	def updateWeight(self, thetaX):
-		self.inputWight = self.inputWight + 0.5 * thetaX;
+		self.inputWight = self.inputWight + LEARNING_RATE * thetaX;
 
 	def getWeight(self):
 		return self.inputWight
 
-neuronNetwork = NeuronNetwork(inputSize = 2, hideSize = 2,outputSize = 2)
+neuronNetwork = NeuronNetwork(inputSize = 2, net1Size = 2,net2Size = 2)
 # for x in xrange(1,1000):
 # 	neuronNetwork.train(input = np.array([1,0]), targetOutput = np.array([1, 2]))	
+for x in xrange(0,100):
+	neuronNetwork.train(input = np.array([0.05,0.10]), targetOutput = np.array([0.01, 0.99]))
+	neuronNetwork.train(input = np.array([0.3,0.70]), targetOutput = np.array([0.90, 0.01]))
+# neuronNetwork.train(input = np.array([1,0]), targetOutput = np.array([1, 2]))
 
-neuronNetwork.train(input = np.array([1,0]), targetOutput = np.array([1, 2]))
-neuronNetwork.train(input = np.array([1,0]), targetOutput = np.array([1, 2]))
+print("Train result")
+outputFinal = neuronNetwork.calculate(input = np.array([0.05,0.10]))
+print("outputFinal1")
+print(outputFinal)
 
+outputFinal = neuronNetwork.calculate(input = np.array([0.3,0.70]))
+print("outputFinal2")
+print(outputFinal)
+
+print("Train End")
 
 # [0,0],[0]
 # [0,1],[1]
 # [1,0],[1]
 # [1,1],[0]
 #
-
-
