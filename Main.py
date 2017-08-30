@@ -8,7 +8,7 @@ LEARNING_RATE = 0.5
 
 
 def logistic(x):
-	return 1.0/(1+np.exp(-x))
+	return 1.0 / (1 + np.exp(-x))
 
 # 神经网络
 class NeuronNetwork(object):
@@ -35,29 +35,29 @@ class NeuronNetwork(object):
 		print("=============================")
 		# 添加偏置 1
 		input = self.appendOne(input)
-		hideOutput = self.net1Layer.calculate(input);
-		hideOutput = np.array(hideOutput)
+		net1Output = self.net1Layer.calculate(input);
+		net1Output = np.array(net1Output)
 
 		# 添加偏置 1
-		hideOutput = self.appendOne(hideOutput)
+		net1Output = self.appendOne(net1Output)
 		print("=============================")
-		print("Calculate HideOutput")
-		print(hideOutput)
-		output = self.net2Layer.calculate(hideOutput);
-		output = np.array(output)
+		print("Calculate net1Output")
+		print(net1Output)
+		net2Output = self.net2Layer.calculate(net1Output);
+		net2Output = np.array(net2Output)
 		print("=============================")
 		print("Calculate TotalOutput")
-		print(output)
+		print(net2Output)
 		print("=============================")
 		print("Calculate distance")
-		differ = targetOutput - output
+		differ = targetOutput - net2Output
 		print(differ * differ)
 		print("temp1")
-		temp1 = differ * output * (1 - output);
+		temp1 = differ * net2Output * (1 - net2Output)
 		temp1.shape = (len(temp1), 1)
 		print(temp1)
-		hideOutput.shape = (1, len(hideOutput))
-		thetaOutput = np.dot(temp1, hideOutput)
+		net1Output.shape = (1, len(net1Output))
+		thetaOutput = np.dot(temp1, net1Output)
 		print("=============================")
 		print("thetaOutput")
 		print(thetaOutput)
@@ -66,11 +66,7 @@ class NeuronNetwork(object):
 		weight = self.net2Layer.getWeight()
 		# print("weight")
 
-
 		temp1.shape = (1, len(temp1))
-		# print("temp1*weight")
-		# print(temp1)
-		# print(np.dot(temp1,weight))
 		thetaHideStep1 = np.dot(temp1,weight)[0] * input
 		thetaHideStep1 = np.split(thetaHideStep1,[self.net1Size])[0]
 		print(thetaHideStep1)
