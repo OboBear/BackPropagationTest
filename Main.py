@@ -31,11 +31,12 @@ class NeuronNetwork(object):
 		print("\n=============================")
 		print("Train")
 		print("=============================")
-
+		# 添加偏置 1
 		input = self.appendOne(input)
 		hideOutput = self.hideLayer.calculate(input);
 		hideOutput = np.array(hideOutput)
 
+		# 添加偏置 1
 		hideOutput = self.appendOne(hideOutput)
 		print("=============================")
 		print("Calculate HideOutput")
@@ -124,6 +125,7 @@ class Neuron(object):
 	def calculate(self, inputData):
 		print("inputData")
 		print(inputData)
+		print(self.inputWight)
 		self.netOut = np.sum(inputData * self.inputWight)
 		self.netOut = logistic(self.netOut)
 		return self.netOut
@@ -135,8 +137,11 @@ class Neuron(object):
 		return self.inputWight
 
 neuronNetwork = NeuronNetwork(inputSize = 2, hideSize = 2,outputSize = 2)
-for x in xrange(1,1000):
-	neuronNetwork.train(input = np.array([1,0]), targetOutput = np.array([1, 2]))	
+# for x in xrange(1,1000):
+# 	neuronNetwork.train(input = np.array([1,0]), targetOutput = np.array([1, 2]))	
+
+neuronNetwork.train(input = np.array([1,0]), targetOutput = np.array([1, 2]))
+neuronNetwork.train(input = np.array([1,0]), targetOutput = np.array([1, 2]))
 
 
 # [0,0],[0]
