@@ -15,6 +15,9 @@ class NeuronNetwork(object):
 		print("=============================")
 
 		print("NeuronNetwork inputSize = %d hideSize = %d outputSize = %d" %(inputSize, hideSize, outputSize))
+		self.inputSize = inputSize
+		self.hideSize = hideSize
+		self.outputSize = outputSize
 		self.hideLayer = NeuronLayer(hideSize, inputSize)
 		self.outputLayer = NeuronLayer(outputSize, hideSize)
 
@@ -35,31 +38,53 @@ class NeuronNetwork(object):
 
 		hideOutput = self.appendOne(hideOutput)
 		print("=============================")
-		print("HideOutput")
+		print("Calculate HideOutput")
 		print(hideOutput)
 		output = self.outputLayer.calculate(hideOutput);
 		output = np.array(output)
 		print("=============================")
-		print("Output:")
+		print("Calculate TotalOutput:")
 		print(output)
-		print(np.array(output))
 		print("=============================")
-		print("Back")
+		print("Calculate distance")
 		differ = targetOutput - output
 		print(differ * differ)
-
 		print("temp1")
 		temp1 = differ * output * (1 - output);
 		temp1.shape = (len(temp1), 1)
 		print(temp1)
 		hideOutput.shape = (1, len(hideOutput))
-		thetaHide = np.dot(temp1, hideOutput)
-		self.outputLayer.updateWeight(thetaHide)
+		thetaOutput = np.dot(temp1, hideOutput)
+		print("=============================")
+		print("thetaOutput")
+		print(thetaOutput)
+
+		# temp1
+		weight = self.outputLayer.getWeight()
+		# print("weight")
+		# print(weight)
 
 
-		print(theta)
+		temp1.shape = (1, len(temp1))
+		# print("temp1*weight")
+		# print(temp1)
+		# print(np.dot(temp1,weight))
+		thetaHideStep1 = np.dot(temp1,weight)[0] * input
+		thetaHideStep1 = np.split(thetaHideStep1,[self.hideSize])[0]
+		print(thetaHideStep1)
+		thetaHideStep1.shape = [len(thetaHideStep1), 1]
+		thetaHideStep1 = np.array(thetaHideStep1)
+		newInput = np.array([input])
+		print("newInput")
+		print(newInput)
+		print("=============================")
+		print("thetaHideStep1")
+		print(thetaHideStep1)
+		thetaHide = np.dot(thetaHideStep1, newInput)
+		print(thetaHide)
 
-
+		self.outputLayer.updateWeight(thetaOutput)
+		self.hideLayer.updateWeight(thetaHide)
 
 
 class NeuronLayer(object):
@@ -83,6 +108,11 @@ class NeuronLayer(object):
 	def updateWeight(self, theta):
 		for x in xrange(0,len(theta)):
 			self.neuronLayer[x].updateWeight(theta[x])
+	def getWeight(self):
+		weight = []
+		for x in xrange(0, len(self.neuronLayer)):
+			weight.append(self.neuronLayer[x].getWeight())
+		return np.array(weight)
 
 
 class Neuron(object):
@@ -97,11 +127,17 @@ class Neuron(object):
 		self.netOut = np.sum(inputData * self.inputWight)
 		self.netOut = logistic(self.netOut)
 		return self.netOut
+
 	def updateWeight(self, thetaX):
-		self.inputWight = self.inputWight - thetaX;
+		self.inputWight = self.inputWight + 0.5 * thetaX;
+
+	def getWeight(self):
+		return self.inputWight
 
 neuronNetwork = NeuronNetwork(inputSize = 2, hideSize = 2,outputSize = 2)
-neuronNetwork.train(input = np.array([1,0]), targetOutput = np.array([1, 2]))
+for x in xrange(1,1000):
+	neuronNetwork.train(input = np.array([1,0]), targetOutput = np.array([1, 2]))	
+
 
 # [0,0],[0]
 # [0,1],[1]
