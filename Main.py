@@ -56,11 +56,7 @@ class NeuronNetwork(object):
 		# 开始反向传播调整权值
 		log("=============================")
 		log("Calculate distance")
-		outputDiffer = net2Output - targetOutput
-		log(outputDiffer * outputDiffer)
-		# print(outputDiffer)
-		log("temp1")
-		temp1 = outputDiffer * net2Output * (1 - net2Output)
+		temp1 = (net2Output - targetOutput) * net2Output * (1 - net2Output)
 		temp1.shape = (len(temp1), 1)
 		log(temp1)
 		net1Output.shape = (1, len(net1Output))
@@ -69,6 +65,7 @@ class NeuronNetwork(object):
 		log("=============================")
 		log("thetaOutput")
 		log(thetaOutput)
+		print(thetaOutput)
 		log("=============================")
 
 		net2Weight = self.net2Layer.getWeight()
@@ -76,26 +73,27 @@ class NeuronNetwork(object):
 		log(net2Weight)
 
 		temp1.shape = (1, len(temp1))
-		print(temp1)
-		print(net2Weight)
-		print(np.dot(temp1,net2Weight))
-		print(net1Input)
 		net1InputMatrix = np.array([net1Input])
-		thetaHideStep1 = np.dot(np.dot(temp1,net2Weight).T , net1InputMatrix)
-		print(thetaHideStep1)
-		thetaHideStep1 = np.split(thetaHideStep1,[self.net1Size])[0]
+		thetaHideStep1 = np.dot((np.dot(temp1,net2Weight) * net1Output * (1 - net1Output)).T , net1InputMatrix)
+
+		# print(thetaHideStep1)
+		# thetaHideStep1 = np.split(thetaHideStep1,[self.net1Size])[0]
 		log(thetaHideStep1)
-		print(thetaHideStep1)
+		# print(thetaHideStep1)
 		# thetaHideStep1.shape = [len(thetaHideStep1), 1]
 		# thetaHideStep1 = np.array(thetaHideStep1)
-		newInput = np.array([input])
+		newInput = np.array([net1Input])
 		log("newInput")
 		log(newInput)
+		# print(newInput)
 		log("=============================")
 		log("thetaHideStep1")
 		log(thetaHideStep1)
-		thetaHide = np.dot(thetaHideStep1, newInput)
+		# 生成第一层梯度
+		thetaHide = thetaHideStep1 * newInput
+
 		log(thetaHide)
+		# print(thetaHide)
 
 		self.net2Layer.updateWeight(thetaOutput)
 		self.net1Layer.updateWeight(thetaHide)
@@ -127,7 +125,7 @@ class NeuronLayer(object):
 		log(np.array(result))
 		return result
 	def updateWeight(self, theta):
-		for x in xrange(0,len(theta)):
+		for x in xrange(0,len(self.neuronLayer)):
 			self.neuronLayer[x].updateWeight(theta[x])
 	def getWeight(self):
 		weight = []
@@ -162,21 +160,23 @@ class Neuron(object):
 neuronNetwork = NeuronNetwork(inputSize = 2, net1Size = 6,net2Size = 1)
 # for x in xrange(1,1000):
 # 	neuronNetwork.train(input = np.array([1,0]), targetOutput = np.array([1, 2]))	
-for x in xrange(0,1000):
+for x in xrange(0,100):
 	neuronNetwork.train(input = np.array([1,0]), targetOutput = np.array([0]))
-	neuronNetwork.train(input = np.array([0,1]), targetOutput = np.array([0]))
-	neuronNetwork.train(input = np.array([1,1]), targetOutput = np.array([1]))
-	neuronNetwork.train(input = np.array([0,0]), targetOutput = np.array([1]))
+	# neuronNetwork.train(input = np.array([0,1]), targetOutput = np.array([0]))
+	# neuronNetwork.train(input = np.array([1,1]), targetOutput = np.array([1]))
+	# neuronNetwork.train(input = np.array([0,0]), targetOutput = np.array([1]))
 # neuronNetwork.train(input = np.array([1,0]), targetOutput = np.array([1, 2]))
 
 log("Train result")
-outputFinal = neuronNetwork.calculate(input = np.array([0.05,0.10]))
+outputFinal = neuronNetwork.calculate(input = np.array([1,0]))
 log("outputFinal1")
 log(outputFinal)
+# print(outputFinal)
 
-outputFinal = neuronNetwork.calculate(input = np.array([0.3,0.70]))
+outputFinal = neuronNetwork.calculate(input = np.array([0,0]))
 log("outputFinal2")
 log(outputFinal)
+# print(outputFinal)
 
 log("Train End")
 
